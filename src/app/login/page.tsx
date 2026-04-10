@@ -3,6 +3,8 @@ import { Mail, ArrowRight, Loader2 } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { user_service } from "@/context/AppContext";
+import toast from "react-hot-toast/headless";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -13,18 +15,17 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const {data} = await axios.post("http://localhost:4000/api/v1/user/login",{email})
+      const {data} = await axios.post(`${user_service}/api/v1/user/login`,{email})
       console.log(data);
-      alert(data.message)
+      toast.success(data.message)
       router.push(`/verify?email=${email}`)
     } catch (error:any) {
-      alert(error)
+      toast.error(error)
     }finally{
         setLoading(false);
     }
     console.log(email);
   };
-  // 3:49:51
   return ( 
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">

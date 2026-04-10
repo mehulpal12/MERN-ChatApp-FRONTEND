@@ -1,9 +1,12 @@
 import VeriftyOtp from '@/components/VeriftyOtp'
-import React from 'react'
+import React, { Suspense } from 'react'
+import Loading from '@/components/Loading'
 
 const VerifyPage = () => {
   return (
-    <VeriftyOtp />
+    <Suspense fallback={<Loading />}>
+        <VeriftyOtp />
+    </Suspense>
   )
 }
 
