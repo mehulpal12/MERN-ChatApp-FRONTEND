@@ -24,7 +24,7 @@ const ChatSidebar = ({sidebarOpen, setSidebarOpen, showAllUsers, setShowAllUsers
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   return (
-  <aside className={`fixed z-30 sm:static top-0 left-0 h-screen w-80 bg-gray-900 border-r border-gray-700 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col`}>
+  <aside className={`fixed z-30 sm:static top-0 left-0 h-full w-80 bg-gray-900 border-r border-gray-700 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col`}>
    {/* Header */}
    <div className='p-2 border-b border-gray-700'>
     {/* <div className="sm:hidden flex justify-end mb-0">
@@ -116,7 +116,7 @@ const ChatSidebar = ({sidebarOpen, setSidebarOpen, showAllUsers, setShowAllUsers
     }
    </div>
    {/* footer  */}
-   <div className='absolute bottom-0 p-4 border-t border-gray-700'>
+   <div className='w-full p-4 border-t border-gray-700 bg-gray-900'>
     {/* user info  */}
     <div className='flex items-center gap-3'>
       
