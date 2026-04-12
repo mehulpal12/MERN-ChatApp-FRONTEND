@@ -10,6 +10,8 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import ChatHeader from "@/components/ChatHeader";
 import ChatMessages from "@/components/ChatMessages";
+import MessageInput from "@/components/MessageInput";
+import { SocketData } from "@/context/SocketContext";
 
 export interface Message {
   _id: string;
@@ -40,8 +42,15 @@ const ChatApp = () => {
     setUsers,
   } = useAppData();
 
+  const {onlineUsers} = SocketData()
+
+  console.log(onlineUsers);
+  
+  // 08:07:09
+  
+
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [message, setMessage] = useState<Message[]>([]);
+  const [message, setMessage] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -113,6 +122,66 @@ const ChatApp = () => {
     }
   }
 
+  const handleMessageSend = async (e: any, imageFile?: File | null) => {
+    e.preventDefault();
+
+    if (!message.trim() && !imageFile) return;
+    if (!selectedUser) return;
+
+    // socket work
+
+    const token = Cookies.get("token");
+    try {
+      const formData = new FormData();
+      formData.append("chatId", selectedUser);
+
+      if (message.trim()) {
+        formData.append("text", message);
+      }
+
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      const { data } = await axios.post(
+        `${chat_service}/api/v1/chat/message`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setMessages((prev) => {
+        const currentMessage = prev || []
+        const messageExist = currentMessage.some(
+          (msg) => msg._id === data.newMessage._id
+        )
+        if(!messageExist){
+          return [...currentMessage, data.newMessage];
+        }
+        return currentMessage;
+      });
+      setMessage("");
+      const displayText = imageFile ? " Image" : message;
+      // setImageFile(null);
+      // await fetchChat();
+    } catch (error: any) {
+      console.log(error.response?.data?.message || error.message);
+      toast.error("Failed to send message");
+    }
+  };
+
+  const handleTyping = (value: string) => {
+    setMessage(value);
+
+    if (!selectedUser) return;
+
+    // socket setup
+  };
+
   useEffect(() => {
     if (selectedUser) {
       fetchChat();
@@ -122,7 +191,7 @@ const ChatApp = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white overflow-hidden flex relative">
+    <div className="h-screen bg-gray-900 text-white overflow-hidden flex relative">
       <ChatSidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -146,7 +215,17 @@ const ChatApp = () => {
           selectedUser={selectedUser}
         />
 
-        <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
+        <ChatMessages
+          selectedUser={selectedUser}
+          messages={messages}
+          loggedInUser={loggedInUser}
+        />
+        <MessageInput
+          selectedUser={selectedUser}
+          message={message}
+          setMessage={handleTyping}
+          handleMessageSend={handleMessageSend}
+        />
       </div>
     </div>
   );

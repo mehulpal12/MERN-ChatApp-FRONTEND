@@ -25,7 +25,9 @@ const ChatMessages = ({selectedUser, messages, loggedInUser}: ChatMessagesProps)
     // seen feature
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({behavior: "smooth"});
+        setTimeout(() => {
+            bottomRef.current?.scrollIntoView({behavior: "smooth"});
+        }, 100);
     }, [selectedUser, uniqueMessages])
 
   return (

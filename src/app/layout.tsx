@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
+import { SocketProvider } from "@/context/SocketContext";
 
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body suppressHydrationWarning={true}>
        <AppProvider>
+        <SocketProvider>
         {children}
+        </SocketProvider>
        </AppProvider>
       </body>
     </html>
