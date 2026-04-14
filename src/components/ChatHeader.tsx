@@ -8,10 +8,12 @@ interface ChatHeaderProps{
     setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
     isTyping: boolean;
     selectedUser: string | null;
+    onlineUsers: string[];
 }
 
-const ChatHeader = ({user, setSidebarOpen, isTyping, selectedUser}: ChatHeaderProps) => {
-    console.log(user);
+const ChatHeader = ({user, setSidebarOpen, isTyping, selectedUser, onlineUsers}: ChatHeaderProps) => {
+  const isOnline = user && onlineUsers.includes(user._id)
+    // console.log(user);
     
   return<>
   {/* mobile toggle button  */}
@@ -33,13 +35,36 @@ const ChatHeader = ({user, setSidebarOpen, isTyping, selectedUser}: ChatHeaderPr
                     <span className='text-gray-300 text-lg'>{user.name.charAt(0).toUpperCase()}</span>
                 </div>
                 {/* yaha pe online dot dikhana hai  */}
+                {
+                  isOnline && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900">
+                      <span className='absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75'></span>
+                    </div>
+                  )
+                }
+
             </div> 
             {/* // user info  */}
             <div>
                 <h3 className='font-medium'>{user.name}</h3>
-                <p className='text-sm text-gray-400'>{user.email}</p>
+                <div className="flex items-center gap-2">
+              {
+                isTyping ? <div className='flex items-center gap-2 text-sm text-gray-400'>
+                  <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce'></div>
+                  <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce' style={{animationDelay:"0.1s"}}></div>
+                  <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce' style={{animationDelay:"0.2s"}}></div>
+                <span className='text-sm text-gray-400'>typing...</span>
+                </div> : <div className='flex items-center gap-2 text-sm text-gray-400'>
+                  {
+                    isOnline ? <div className='w-2 h-2 bg-green-500 rounded-full'></div> : <div className='w-2 h-2 bg-gray-400 rounded-full'></div>
+                  }
+                  <span className='text-sm text-gray-400'>{isOnline ? "Online" : "Offline"}</span>
+
+                </div>
+              }
             </div>
-            {/* show typing status  */}
+            </div>
+            
             </>
             
             

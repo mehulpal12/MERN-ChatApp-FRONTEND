@@ -17,9 +17,10 @@ interface ChatSidebarProps{
     handlelogout: () => void;
     loggedInUser: User | null;
     createChat: (user:User) => void;
+    onlineUsers: string[];
 }
 
-const ChatSidebar = ({sidebarOpen, setSidebarOpen, showAllUsers, setShowAllUsers, istyping, typingTimeOut, user, chats, selectedUser, setSelectedUser, handlelogout, loggedInUser, createChat}: ChatSidebarProps) => {
+const ChatSidebar = ({sidebarOpen, setSidebarOpen, showAllUsers, setShowAllUsers, istyping, typingTimeOut, user, chats, selectedUser, setSelectedUser, handlelogout, loggedInUser, createChat, onlineUsers}: ChatSidebarProps) => {
 
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -57,13 +58,19 @@ const ChatSidebar = ({sidebarOpen, setSidebarOpen, showAllUsers, setShowAllUsers
         <div className='flex-1 overflow-y-auto space-y-2'>
           {user?.filter((u) => u._id !== loggedInUser?._id && u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u) => (
             <div key={u._id} onClick={() => createChat(u)} className='flex items-center gap-3 p-2 hover:bg-gray-800 rounded-lg cursor-pointer'>
-              <div className='w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center'>
+              <div className='relative w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center'>
                 <span className='text-gray-300'>{u.name.charAt(0).toUpperCase()}</span>
+                {
+                  onlineUsers.includes(u._id) && (
+                    <span className='text-xs absolute -top-0.5 -right-0.5 w-3.5 h-3.5 text-white bg-green-500 rounded-full border-2 border-gray-900'></span>
+                  )
+                }
               </div>
-              <div className='flex-1'>
-                {/* online symbol dikhana  h yaha */}
+              <div className='flex-1'>                
                 <h3 className='font-medium'>{u.name}</h3>
-                <p className='text-sm text-gray-400'>{u.email}</p>
+                {
+                  onlineUsers.includes(u._id) ? <p className='text-sm text-green-500'>Online</p> : <p className='text-sm text-gray-400'>Offline</p>
+                }
               </div>
             </div>
           ))}
@@ -81,8 +88,13 @@ const ChatSidebar = ({sidebarOpen, setSidebarOpen, showAllUsers, setShowAllUsers
             // setSidebarOpen(false);
            }} className={`w-full text-left p-3 rounded-lg transition-colors ${isSelected ? "bg-gray-700" : "hover:bg-gray-800"}`}>
             <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center'>
+              <div className='relative w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center'>
                 <span className='text-gray-300'>{(chatItem.user?.name || "U").charAt(0).toUpperCase()}</span>
+                {
+                  chatItem.user && onlineUsers.includes(chatItem.user._id) && (
+                    <span className='text-xs absolute -top-0.5 -right-0.5 w-3.5 h-3.5 text-white bg-green-500 rounded-full border-2 border-gray-900'></span>
+                  )
+                }
               </div>
               <div className='flex-1'>
                 <div className=" flex justify-between">
