@@ -13,7 +13,7 @@ interface ChatHeaderProps{
 
 const ChatHeader = ({user, setSidebarOpen, isTyping, selectedUser, onlineUsers}: ChatHeaderProps) => {
   const isOnline = user && onlineUsers.includes(user._id)
-    // console.log(user);
+    // console.log(onlineUsers);
     
   return<>
   {/* mobile toggle button  */}

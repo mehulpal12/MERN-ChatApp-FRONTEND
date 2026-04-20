@@ -5,9 +5,9 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import {Toaster, toast} from "react-hot-toast";
 
-export const user_service = "http://16.170.245.99:4000";
-export const mail_service = "http://16.170.245.99:4001";
-export const chat_service = "http://16.170.245.99:4002";
+export const user_service = "http://localhost:4000";
+export const mail_service = "http://localhost:4001";
+export const chat_service = "http://localhost:4002";
 
 
 export interface User{
@@ -76,6 +76,7 @@ export const AppProvider:React.FC<AppProviderProps> = ({children})=>{
                 const data = await response.json();
                 if(data.user){
                     setUser(data.user);
+                    
                     setIsAuth(true);
                 }
             }

@@ -1,7 +1,7 @@
 "use client";
 
 import { User, chat_service, useAppData } from "@/context/AppContext";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
 import ChatSidebar from "@/components/chatSidebar";
@@ -37,17 +37,10 @@ const ChatApp = () => {
     user: loggedInUser,
     users,
     fetchChats,
-    fetchUsers,
     setChats,
-    setUsers,
   } = useAppData();
 
-  const {onlineUsers , socket} = SocketData()
-
-  console.log(onlineUsers);
-  
-  // 08:07:09
-  
+  const { onlineUsers, socket } = SocketData();
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState<string>("");
@@ -57,9 +50,7 @@ const ChatApp = () => {
   const router = useRouter();
   const [showAllUsers, setShowAllUsers] = useState<boolean>(false);
   const [istyping, setIsTyping] = useState<boolean>(false);
-  const [typingTimeOut, setTypingTimeOut] = useState<NodeJS.Timeout | null>(
-    null,
-  );
+  const [typingTimeOut, setTypingTimeOut] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isAuth && !loading) {
@@ -85,48 +76,48 @@ const ChatApp = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
       setMessages(data.messages);
       setUser(data.user);
       await fetchChats();
     } catch (error: any) {
-      console.log(error.response?.data?.message || error.message);
+      console.log(error.message);
       toast.error("Failed to fetch message");
     }
   }
 
-  const moveChatToTop = (chatId:string, newMessage:any, updatedUnseenCount= true) => {
+  const moveChatToTop = useCallback((chatId: string, newMessage: { text: string; sender: string }, updatedUnseenCount = true) => {
     setChats((prev) => {
-      if(!prev) return prev;
+      if (!prev) return prev;
       const updatedChats = [...prev];
       const chatIndex = updatedChats.findIndex((c) => c.chat._id === chatId);
 
-      if(chatIndex !== -1){
+      if (chatIndex !== -1) {
         const [chat] = updatedChats.splice(chatIndex, 1);
         const updatedChat = {
           ...chat,
           chat: {
             ...chat.chat,
-             latestMessage:{
-              text:newMessage.text,
-              sender:newMessage.sender,
-             },
-             updatedAt: new Date().toString(),
-             unseenCount: updatedUnseenCount ? (chat.chat.unseenCount || 0) + 1 : chat.chat.unseenCount,
+            latestMessage: {
+              text: newMessage.text,
+              sender: newMessage.sender,
+            },
+            updatedAt: new Date().toString(),
+            unseenCount: updatedUnseenCount ? (chat.chat.unseenCount || 0) + 1 : chat.chat.unseenCount,
           }
         };
         updatedChats.unshift(updatedChat);
       }
       return updatedChats;
     });
-  }
+  }, [setChats]);
 
-  const resetUnseenCount = (chatId:string) => {
+  const resetUnseenCount = (chatId: string) => {
     setChats((prev) => {
-      if(!prev) return prev;
+      if (!prev) return prev;
       return prev.map((chat) => {
-        if(chat.chat._id === chatId){
+        if (chat.chat._id === chatId) {
           return {
             ...chat,
             chat: {
@@ -138,7 +129,7 @@ const ChatApp = () => {
         return chat;
       });
     });
-  }
+  };
 
   async function createChat(u: User) {
     try {
@@ -155,25 +146,24 @@ const ChatApp = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
       setSelectedUser(data.chatId);
       setShowAllUsers(false);
       await fetchChats();
     } catch (error: any) {
-      console.log(error.response?.data?.message || error.message);
+      console.log(error.message);
       toast.error("Failed to create chat");
     }
   }
 
-  const handleMessageSend = async (e: any, imageFile?: File | null) => {
+  const handleMessageSend = async (e: React.FormEvent<HTMLFormElement>, imageFile?: File | null) => {
     e.preventDefault();
 
     if (!message.trim() && !imageFile) return;
     if (!selectedUser) return;
 
-    // socket work
-    if(typingTimeOut){
+    if (typingTimeOut) {
       clearTimeout(typingTimeOut);
       setTypingTimeOut(null);
     }
@@ -182,7 +172,6 @@ const ChatApp = () => {
       userId: loggedInUser?._id,
       chatId: selectedUser,
     });
-  
 
     const token = Cookies.get("token");
     try {
@@ -205,32 +194,32 @@ const ChatApp = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       setMessages((prev) => {
-        const currentMessage = prev || []
+        const currentMessage = prev || [];
         const messageExist = currentMessage.some(
           (msg) => msg._id === data.newMessage._id
-        )
-        if(!messageExist){
+        );
+        if (!messageExist) {
           return [...currentMessage, data.newMessage];
         }
         return currentMessage;
       });
       setMessage("");
-      const displayText = imageFile ? " Image" : message;
-      
+      const displayText = imageFile ? "Image" : message;
+
       moveChatToTop(
-        selectedUser!,{
-          text: displayText,
-          sender: data.sender
-        },
+        selectedUser!, {
+        text: displayText,
+        sender: data.sender
+      },
         false
-      )
+      );
 
     } catch (error: any) {
-      console.log(error.response?.data?.message || error.message);
+      console.log(error.message);
       toast.error("Failed to send message");
     }
   };
@@ -240,14 +229,13 @@ const ChatApp = () => {
 
     if (!selectedUser || !socket) return;
 
-    // socket setup
-    if(value.trim().length > 0){
+    if (value.trim().length > 0) {
       socket.emit("typing", {
         userId: loggedInUser?._id,
         chatId: selectedUser,
       });
 
-      if(typingTimeOut){
+      if (typingTimeOut) {
         clearTimeout(typingTimeOut);
       }
       setTypingTimeOut(setTimeout(() => {
@@ -260,97 +248,99 @@ const ChatApp = () => {
   };
 
   useEffect(() => {
+    if (!socket) return;
 
-    socket?.on("newMessage", (newMessage: Message) => {
-      console.log("recieved new message ", newMessage);
-      if(newMessage.chatId === selectedUser){
+    const handleNewMessage = (newMessage: Message) => {
+      const displayText = newMessage.text || (newMessage.messageType === "image" ? "Image" : "");
+
+      if (newMessage.chatId === selectedUser) {
         setMessages((prev) => {
-          const currentMessage = prev || []
-          const messageExist = currentMessage.some(
-            (msg) => msg._id === newMessage._id
-          )
-          if(!messageExist){
-            return [...currentMessage, newMessage];
-          }
+          const currentMessage = prev || [];
+          const messageExist = currentMessage.some((msg) => msg._id === newMessage._id);
+          if (!messageExist) return [...currentMessage, newMessage];
           return currentMessage;
         });
+        moveChatToTop(
+          newMessage.chatId,
+          { text: displayText, sender: newMessage.sender },
+          false
+        );
 
-        moveChatToTop(newMessage.chatId, newMessage, false);
-
+        socket.emit("markAsSeen", {
+          chatId: selectedUser,
+          userId: loggedInUser?._id,
+        });
       } else {
-        moveChatToTop(newMessage.chatId, newMessage, true);
+        moveChatToTop(
+          newMessage.chatId,
+          { text: displayText, sender: newMessage.sender },
+          true
+        );
       }
-    });
+    };
 
-    if(socket){
-      socket.on("messagesSeen", (data: {chatId: string, seenBy: string, messageIds: string[]}) => {
-        console.log("messages seen ", data);
-
-        if(selectedUser === data.chatId){
-          setMessages((prev) => {
-            if(!prev) return prev;
-            return prev.map((msg) => {
-              if(data.messageIds.includes(msg._id)){
-                return {
-                  ...msg,
-                  seen: true,
-                  seenAt: new Date().toString()
-                };
-              }
-              return msg;
-            });
+    const handleMessagesSeen = (data: { chatId: string; seenBy: string; messageIds: string[] }) => {
+      if (selectedUser === data.chatId) {
+        setMessages((prev) => {
+          if (!prev) return prev;
+          return prev.map((msg) => {
+            if (data.messageIds.includes(msg._id)) {
+              return { ...msg, seen: true, seenAt: new Date().toString() };
+            }
+            return msg;
           });
-        }
-        
-      });
-    }
+        });
+      }
+    };
 
-    if(socket){
-      socket.on("userTyping", (data: {userId:string,chatId:string}) => {
-        console.log("recieved user typing ", data);
-        
-        if(data.chatId === selectedUser){
-          setIsTyping(true);
-        }
-      });
-      socket.on("userStoppedTyping", (data: {userId:string,chatId:string}) => {
-        console.log("recieved user stop typing ", data);
-        if(data.chatId === selectedUser){
-          setIsTyping(false);
-        }
-      });
-      return () =>{
-    socket?.off("newMessage");
-    socket?.off("messagesSeen");
-    socket?.off("userTyping");
-    socket?.off("userStoppedTyping");
-  }
-    }
-  }, [socket, selectedUser,loggedInUser?._id, setChats]);
-  
+    const handleUserTyping = (data: { userId: string; chatId: string }) => {
+      if (data.chatId === selectedUser) setIsTyping(true);
+    };
+
+    const handleStopTyping = (data: { userId: string; chatId: string }) => {
+      if (data.chatId === selectedUser) setIsTyping(false);
+    };
+
+    socket.on("newMessage", handleNewMessage);
+    socket.on("messagesSeen", handleMessagesSeen);
+    socket.on("userTyping", handleUserTyping);
+    socket.on("stopTyping", handleStopTyping);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+      socket.off("messagesSeen", handleMessagesSeen);
+      socket.off("userTyping", handleUserTyping);
+      socket.off("stopTyping", handleStopTyping);
+    };
+  }, [socket, selectedUser, loggedInUser?._id, moveChatToTop]);
+
 
   useEffect(() => {
     if (selectedUser) {
       fetchChat();
-      setIsTyping(false)
+      setIsTyping(false);
+      resetUnseenCount(selectedUser);
 
-      resetUnseenCount(selectedUser)
+      socket?.emit("joinChat", selectedUser);
+      socket?.emit("markAsSeen", {
+        chatId: selectedUser,
+        userId: loggedInUser?._id,
+      });
 
-      socket?.emit("joinChat",selectedUser);
       return () => {
-        socket?.emit("leaveChat",selectedUser);
+        socket?.emit("leaveChat", selectedUser);
         setMessage("");
-      }
+      };
     }
-  }, [selectedUser, socket]);
+  }, [selectedUser, socket, loggedInUser?._id]);
 
-  useEffect(()=>{
-    return () =>{
-      if(typingTimeOut){
+  useEffect(() => {
+    return () => {
+      if (typingTimeOut) {
         clearTimeout(typingTimeOut);
       }
-    }
-  },[typingTimeOut])
+    };
+  }, [typingTimeOut]);
 
   if (loading) return <Loading />;
 

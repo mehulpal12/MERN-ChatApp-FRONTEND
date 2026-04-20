@@ -37,6 +37,8 @@ export const SocketProvider = ({children}:ProviderProps) => {
 
         newSocket.on("getOnlineUsers",(users:string[]) => {
             setOnlineUsers(users)
+            console.log(users);
+            
         })
 
         return () =>{ newSocket.disconnect()}
