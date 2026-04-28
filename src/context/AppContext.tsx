@@ -5,9 +5,9 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import {Toaster, toast} from "react-hot-toast";
 
-export const user_service = "http://localhost:4000";
-export const mail_service = "http://localhost:4001";
-export const chat_service = "http://localhost:4002";
+export const user_service = "http://13.63.193.155:4000";
+export const mail_service = "http://13.63.193.155:4001";
+export const chat_service = "http://13.63.193.155:4002";
 
 
 export interface User{
