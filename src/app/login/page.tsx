@@ -4,28 +4,35 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { user_service } from "@/context/AppContext";
-import toast from "react-hot-toast/headless";
+import {toast} from "react-hot-toast";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   
-  const handleSubmit = async(e: React.FormEvent<HTMLElement>):Promise<void> => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const {data} = await axios.post(`${user_service}/api/v1/user/login`,{email})
-      console.log(data);
-      toast.success(data.message)
-      router.push(`/verify?email=${email}`)
-    } catch (error:any) {
-      toast.error(error)
-    }finally{
-        setLoading(false);
-    }
-    console.log(email);
-  };
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  e.preventDefault();
+  if (!email) {
+    toast.error("Please enter your email")
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const { data } = await axios.post(`${user_service}/api/v1/user/login`, { email });
+    console.log(data);
+    toast.success(data.message);
+    router.push(`/verify?email=${email}`);
+    setLoading(false); 
+
+  } catch (error: any) {
+    const message = error.response?.data?.message || "Login failed";
+    toast.error(message);
+    setLoading(false); 
+  }
+};
+
   return ( 
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
